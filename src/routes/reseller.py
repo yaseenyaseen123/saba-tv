@@ -78,23 +78,27 @@ def get_transactions(user_id):
 
 @reseller_bp.route('/<int:user_id>/stats', methods=['GET'])
 def get_stats(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'المستخدم غير موجود'}), 404
-    
-    devices = Device.query.filter_by(user_id=user_id).all()
-    total_devices = len(devices)
-    active_devices = len([d for d in devices if d.status == 'active'])
-    
-    expiring_devices = 0
-    for d in devices:
-        days_left = (d.expiry_date - datetime.now().date()).days
-        if 0 < days_left <= 30:
-            expiring_devices += 1
-    
-    return jsonify({
-        'credits': user.credits,
-        'totalDevices': total_devices,
-        'activeDevices': active_devices,
-        'expiringDevices': expiring_devices
-    }), 200
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'المستخدم غير موجود'}), 404
+        
+        devices = Device.query.filter_by(user_id=user_id).all()
+        total_devices = len(devices)
+        active_devices = len([d for d in devices if d.status == 'active'])
+        
+        expiring_devices = 0
+        for d in devices:
+            days_left = (d.expiry_date - datetime.now().date()).days
+            if 0 < days_left <= 30:
+                expiring_devices += 1
+        
+        return jsonify({
+            'credits': user.credits,
+            'totalDevices': total_devices,
+            'activeDevices': active_devices,
+            'expiringDevices': expiring_devices
+        }), 200
+    except Exception as e:
+        print(f"Error in get_stats: {e}")
+        return jsonify({'error': str(e)}), 500

@@ -16,8 +16,8 @@ from werkzeug.security import generate_password_hash
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'saba_tv_secret_key_2025'
 
-# Enable CORS for development
-CORS(app)
+# Enable CORS for all origins
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
@@ -42,21 +42,31 @@ db.init_app(app)
 
 # Initialize database
 with app.app_context():
-    db.create_all()
-    
-    # Check if admin user exists, if not create one
-    if not User.query.filter_by(username='admin').first():
-        # Create default admin user
-        admin = User(
-            username='admin',
-            password=generate_password_hash('admin123'),
-            name='المدير الرئيسي',
-            role='admin',
-            credits=0
-        )
-        db.session.add(admin)
-        db.session.commit()
-        print("✅ Database initialized with admin user")
+    try:
+        # Ensure database directory exists
+        db_path = os.path.join(os.path.dirname(__file__), 'database')
+        os.makedirs(db_path, exist_ok=True)
+        
+        db.create_all()
+        print("✅ Database tables created successfully")
+        
+        # Check if admin user exists, if not create one
+        if not User.query.filter_by(username='admin').first():
+            # Create default admin user
+            admin = User(
+                username='admin',
+                password=generate_password_hash('admin123'),
+                name='المدير الرئيسي',
+                role='admin',
+                credits=0
+            )
+            db.session.add(admin)
+            db.session.commit()
+            print("✅ Admin user created successfully")
+        else:
+            print("✅ Admin user already exists")
+    except Exception as e:
+        print(f"❌ Database initialization error: {e}")
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
