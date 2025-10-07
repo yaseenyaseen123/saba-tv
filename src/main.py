@@ -38,13 +38,13 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-# Initialize database with sample data
+# Initialize database
 with app.app_context():
     db.create_all()
     
-    # Check if admin user exists
+    # Check if admin user exists, if not create one
     if not User.query.filter_by(username='admin').first():
-        # Create admin user
+        # Create default admin user
         admin = User(
             username='admin',
             password=generate_password_hash('admin123'),
@@ -53,101 +53,8 @@ with app.app_context():
             credits=0
         )
         db.session.add(admin)
-        
-        # Create sample resellers
-        reseller1 = User(
-            username='reseller',
-            password=generate_password_hash('reseller123'),
-            name='موزع تجريبي',
-            role='reseller',
-            credits=1500
-        )
-        db.session.add(reseller1)
-        
-        reseller2 = User(
-            username='ahmed',
-            password=generate_password_hash('ahmed123'),
-            name='موزع أحمد',
-            role='reseller',
-            credits=500
-        )
-        db.session.add(reseller2)
-        
-        reseller3 = User(
-            username='mohamed',
-            password=generate_password_hash('mohamed123'),
-            name='موزع محمد',
-            role='reseller',
-            credits=1200
-        )
-        db.session.add(reseller3)
-        
         db.session.commit()
-        
-        # Create sample devices
-        device1 = Device(
-            mac_address='00:1B:44:11:3A:B7',
-            customer_name='عميل أحمد',
-            user_id=reseller2.id,
-            expiry_date=datetime.now().date() + timedelta(days=85),
-            status='active'
-        )
-        db.session.add(device1)
-        
-        device2 = Device(
-            mac_address='A4:5E:60:E5:7C:8D',
-            customer_name='عميل محمد',
-            user_id=reseller3.id,
-            expiry_date=datetime.now().date() + timedelta(days=39),
-            status='active'
-        )
-        db.session.add(device2)
-        
-        device3 = Device(
-            mac_address='B8:27:EB:4F:2A:1C',
-            customer_name='عميل سارة',
-            user_id=reseller2.id,
-            expiry_date=datetime.now().date() - timedelta(days=17),
-            status='expired'
-        )
-        db.session.add(device3)
-        
-        # Create sample M3U links
-        m3u1 = M3ULink(
-            name='قائمة رئيسية',
-            url='http://example.com/playlist.m3u',
-            status='active',
-            device_count=73
-        )
-        db.session.add(m3u1)
-        
-        m3u2 = M3ULink(
-            name='قائمة احتياطية',
-            url='http://backup.example.com/list.m3u',
-            status='inactive',
-            device_count=0
-        )
-        db.session.add(m3u2)
-        
-        # Create sample transactions
-        trans1 = Transaction(
-            user_id=reseller1.id,
-            type='purchase',
-            amount=500,
-            description='شراء 500 نقطة'
-        )
-        db.session.add(trans1)
-        
-        trans2 = Transaction(
-            user_id=reseller1.id,
-            type='usage',
-            amount=-50,
-            description='تفعيل جهاز جديد'
-        )
-        db.session.add(trans2)
-        
-        db.session.commit()
-        print("✅ Database initialized with sample data")
+        print("✅ Database initialized with admin user")
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
