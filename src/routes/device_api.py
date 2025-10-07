@@ -67,21 +67,29 @@ def verify_device():
             'error_code': 'SUBSCRIPTION_EXPIRED'
         }), 403
     
-    # الحصول على رابط M3U النشط
-    m3u_link = M3ULink.query.filter_by(status='active').first()
+    # الحصول على رابط M3U - أولوية للرابط الخاص بالجهاز
+    m3u_url = device.m3u_url
+    m3u_name = "رابط خاص بالجهاز"
     
-    if not m3u_link:
-        return jsonify({
-            'status': 'error',
-            'message': 'لا يوجد رابط M3U متاح حالياً',
-            'error_code': 'NO_M3U_AVAILABLE'
-        }), 500
+    # إذا لم يكن للجهاز رابط خاص، استخدم الرابط العام
+    if not m3u_url or m3u_url.strip() == '':
+        m3u_link = M3ULink.query.filter_by(status='active').first()
+        
+        if not m3u_link:
+            return jsonify({
+                'status': 'error',
+                'message': 'لا يوجد رابط M3U متاح حالياً',
+                'error_code': 'NO_M3U_AVAILABLE'
+            }), 500
+        
+        m3u_url = m3u_link.url
+        m3u_name = m3u_link.name
     
     # إرجاع البيانات بنجاح
     return jsonify({
         'status': 'active',
-        'm3u_url': m3u_link.url,
-        'm3u_name': m3u_link.name,
+        'm3u_url': m3u_url,
+        'm3u_name': m3u_name,
         'expiry_date': device.expiry_date.strftime('%Y-%m-%d'),
         'days_left': days_left,
         'customer_name': device.customer_name,

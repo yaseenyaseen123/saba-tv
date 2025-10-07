@@ -39,6 +39,7 @@ def create_device(user_id):
     device = Device(
         mac_address=data['mac_address'],
         customer_name=data['customer_name'],
+        m3u_url=data.get('m3u_url', ''),  # رابط M3U8 خاص بالجهاز
         user_id=user_id,
         expiry_date=datetime.strptime(data['expiry_date'], '%Y-%m-%d').date(),
         status='active'

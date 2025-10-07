@@ -23,6 +23,7 @@ class Device(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     mac_address = db.Column(db.String(17), unique=True, nullable=False)
     customer_name = db.Column(db.String(120), nullable=False)
+    m3u_url = db.Column(db.Text, nullable=True)  # رابط M3U8 خاص بالجهاز
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     expiry_date = db.Column(db.Date, nullable=False)
     status = db.Column(db.String(20), default='active')  # 'active' or 'expired'
