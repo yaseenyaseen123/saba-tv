@@ -9,6 +9,7 @@ from src.models.models import db, User, Device, M3ULink, Transaction
 from src.routes.auth import auth_bp
 from src.routes.admin import admin_bp
 from src.routes.reseller import reseller_bp
+from src.routes.device_api import device_api_bp
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 
@@ -22,6 +23,7 @@ CORS(app)
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
 app.register_blueprint(reseller_bp, url_prefix='/api/reseller')
+app.register_blueprint(device_api_bp, url_prefix='/api/device')
 
 # Database configuration
 # Use PostgreSQL if DATABASE_URL is set (Railway), otherwise use SQLite
