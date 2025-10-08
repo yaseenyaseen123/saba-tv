@@ -19,7 +19,7 @@ app.config['SECRET_KEY'] = 'saba_tv_secret_key_2025'
 # Enable CORS for all origins
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
-# Register blueprints
+# Register blueprints FIRST - this is critical!
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
 app.register_blueprint(reseller_bp, url_prefix='/api/reseller')
@@ -68,29 +68,20 @@ with app.app_context():
     except Exception as e:
         print(f"❌ Database initialization error: {e}")
 
-# Serve static files - IMPORTANT: This must NOT intercept API routes
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve(path):
-    # Skip API routes - let Flask blueprints handle them
-    if path.startswith('api/') or path.startswith('api'):
-        from flask import abort
-        abort(404)
-    
-    static_folder_path = app.static_folder
-    if static_folder_path is None:
-        return "Static folder not configured", 404
+# Serve index.html for root
+@app.route('/')
+def index():
+    return send_from_directory(app.static_folder, 'index.html')
 
-    # Try to serve the requested file
-    if path != "" and os.path.exists(os.path.join(static_folder_path, path)):
-        return send_from_directory(static_folder_path, path)
-    
-    # Otherwise serve index.html for client-side routing
-    index_path = os.path.join(static_folder_path, 'index.html')
-    if os.path.exists(index_path):
-        return send_from_directory(static_folder_path, 'index.html')
-    else:
-        return "index.html not found", 404
+# Serve static files - this will only match if no API route matched
+@app.route('/<path:filename>')
+def serve_static(filename):
+    # Check if it's a static file that exists
+    file_path = os.path.join(app.static_folder, filename)
+    if os.path.isfile(file_path):
+        return send_from_directory(app.static_folder, filename)
+    # Otherwise, serve index.html for client-side routing (SPA)
+    return send_from_directory(app.static_folder, 'index.html')
 
 
 if __name__ == '__main__':
